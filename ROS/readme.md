@@ -1,3 +1,7 @@
+file key.py (game control)
+file manuver (program ros pusat baru)
+
+
 pada zip anton_ws terdapat packaged Open CV, Rosserial ( Control Motor ) dan topic keseluruhan
 
 Keterangan :
