@@ -22,7 +22,7 @@ while not rospy.is_shutdown():
             buf=con.recv(BUFFER)
             pub.publish(buf)
 	    print(buf)
-            time.sleep(1)
+            time.sleep(0.005)
         except socket.timeout:
             print 'time out'
         con.send('yes i recv')
