@@ -14,65 +14,83 @@ while True:
 	if keyboard.is_pressed('a'):
 		data = 'a'
 		print("a is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('s'):
 		data = 's'
 		print("s is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('d'):
 		data = 'd'
 		print("d is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('w'):
 		data = 'w'
 		print("w is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('q'):
 		data = 'q'
 		print("q is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('e'):
 		data = 'e'
 		print("e is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('r'):
 		data = 'r'
 		print("r is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.5)
 	elif keyboard.is_pressed('j'):
 		data = 'j'
 		print("j is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
 	elif keyboard.is_pressed('k'):
 		data = 'k'
 		print("k is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('l'):
 		data = 'l'
 		print("l is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('i'):
 		data = 'i'
 		print("i is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('u'):
 		data = 'u'
 		print("u is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('o'):
 		data = 'o'
 		print("o is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
 	elif keyboard.is_pressed('v'):
 		data = 'v'
 		print("v is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
 	elif keyboard.is_pressed('b'):
 		data = 'b'
 		print("b is pressed")
-		sendMsg("192.168.100.12",data)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
+	elif keyboard.is_pressed('1'):
+		data = '1'
+		print("1 is pressed")
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.5)
 	else:
 		data = 'S'
 		print("S")
-		sendMsg("192.168.100.12",data)
-	time.sleep(0.01)
+		sendMsg("192.168.43.42",data)
+		time.sleep(0.1)
