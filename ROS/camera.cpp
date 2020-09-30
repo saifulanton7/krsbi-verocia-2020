@@ -1,5 +1,9 @@
 #include <iostream>
 #include "std_msgs/String.h"
+#include <std_msgs/UInt16.h>
+#include "std_msgs/MultiArrayLayout.h"
+#include "std_msgs/MultiArrayDimension.h"
+#include "std_msgs/Float32MultiArray.h"
 #include <vector>
 #include <sstream>
 #include "opencv2/highgui/highgui.hpp"
@@ -7,6 +11,7 @@
 #include <cv.h>
 #include "ros/ros.h"
 #include <stdlib.h>
+#include <fstream>
 
 #define XMID 320
 #define A_XMAX 55 	//right angle
@@ -17,19 +22,15 @@
 #define A_YMIN 140	//bottom angle
 using namespace cv;
 using namespace std;
-int posX = 0;
-int posY = 0;
-
- int main(int argc, char** argv)
+int posX,posY,ada;
+ int main (int argc, char** argv)
  {
-	ros::init(argc, argv, "wabcam");
+	ros::init(argc, argv, "webcam");
 	ros::NodeHandle n;
 	ros::Publisher camera = n.advertise<std_msgs::String>("camera", 1000);
 	ros::Rate loop_rate(10);
-	
-	//ambil gambar dari kamera
-	VideoCapture cap(0); //capture the video from webcam
-	
+
+	VideoCapture cap(0); //capture the video from webcam	
 	if ( !cap.isOpened() )  // if not success, exit program
     	{
         	cout << "Cannot open the web cam" << endl;
@@ -39,7 +40,7 @@ int posY = 0;
  	//create a window called "Control"
 	namedWindow("Control", CV_WINDOW_AUTOSIZE);
 	int iLowH  = 0;
-	int iHighH = 140;
+	int iHighH = 70;
 	int iLowS  = 58; 
 	int iHighS = 255;
 	int iLowV  = 193;
@@ -61,6 +62,10 @@ int posY = 0;
 	//Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );;
 	Mat imgCircles = Mat::zeros( imgTmp.size(), CV_8UC3 );;
  
+	float Y_angle = 55;
+	float X_angle = 115;
+  	int a = 0;
+	
 	//PROGRAM LOOPING
 	while (ros::ok())
 	{
@@ -93,73 +98,117 @@ int posY = 0;
 		double dM01 = oMoments.m01;
 		double dM10 = oMoments.m10;
 		double dArea = oMoments.m00;
-
-   		// if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
-	  	if(dArea < 100000)
-	  	{
-			posX = 0;
-			posY = 0;
-			printf("ROBOT CARI BOLA \n");
-	  	}
-
-	  	else
-	  	{
-			//calculate the position of the ball
-			posX = dM10 / dArea;
-			posY = dM01 / dArea;         
-			Point CircleCenter;
-			CircleCenter=Point(posX,posY);
-			int Radius;
-			Scalar Color;
-			int Thickness;
-			int Shift;
-			Radius=45;
-			Color=CV_RGB(0,0,255);
-			Thickness=3;
-			Shift = 0;
-			circle(imgCircles,CircleCenter,Radius,Color,Thickness,CV_AA,Shift); 
-		}
-
-		//publish string ros
-		std_msgs::String msg;
-		std::stringstream ss;
-		ss << "{'x':" << posX;
-		ss << ",'y':" << posY;
-		msg.data = ss.str() + "}";
-		ROS_INFO("%s", msg.data.c_str());
-		camera.publish(msg);
-		ros::spinOnce();
-
 		
-		if(posX<=200)
-		{
-			printf("ROBOT BELOK KIRI \n");
-		}
+		vector<vector<Point> > cont;
+		vector<Vec4i> hire;
 
-		else if(posX>=430)
-		{
-			printf("ROBOT BELOK KANAN \n");
-		}
+		findContours(imgThresholded,cont,hire,RETR_EXTERNAL,CHAIN_APPROX_SIMPLE,Point(0,0));
 
-		else
-		{
-			printf("ROBOT MAJU \n");
+		vector<vector<Point> > pol(cont.size());
+		vector<Point2f> center(cont.size());
+		vector<float> radius(cont.size());
+		Mat drawing = Mat::zeros(imgOriginal.size(), CV_8UC3);
+                int ball=0;
+
+			for (int i = 0;i < cont.size();i++) {
+                        //az=0;bh
+			approxPolyDP(Mat(cont[i]),pol[i],arcLength(Mat(cont[i]),true)*0.01,true);
+			double a = contourArea(cont[i],false);
+			//cout <<"Nilai aaau :"<< pol[i].size()<<" Nilai Luas :"<<a<<endl;
+			if ((pol[i].size() >= 5)) {
+				if ((a > 500)) {
+					minEnclosingCircle(cont[i], center[i], radius[i]);
+				}
+				if ((radius[i] >= 3)) {
+					Rect r = boundingRect(cont [i]);
+				        double z=abs(1 - ((double)r.width / r.height));
+                                        double w=abs(1 - (a / (3.14 * (radius[i] * radius[i]))));
+                                       // cout <<"Nilai aaau :"<< z<<" Nilai Luas :"<<w<<endl;
+					if (abs(1 - ((double)r.width / r.height)) <= 0.5 && abs(1 - (a / (3.14 * (radius[i] * radius[i])))) <= 0.5) {                                          
+                                                ball++;
+						Scalar color = Scalar(0, 0, 240);
+						circle(imgOriginal, center[i], (int)radius[i], color, 2, 8, 0);
+						circle(imgOriginal, center[i], 2, color, 2, 8, 0);
+                                                cout<<"X : "<<center[i].x<<" Y : "<<center[i].y<<endl;
+                                                int rads=radius[i];
+                                                cout<<"Radius : "<<rads<<endl;
+						ada = 1;
+                                                //hasil<<rads<<endl;
+                                                std_msgs::String msg;
+						std::stringstream ss;
+						ss << "{\"x\":" << center[i].x;			
+						ss << ",\"y\":" << center[i].y;
+						msg.data = ss.str() + "}";			
+						ROS_INFO("%s", msg.data.c_str());
+						camera.publish(msg);
+						ros::spinOnce();
+					}		
+					else
+					{
+
+
+						if(ada==0)
+						{
+							//calculate the position of the ball
+							posX = dM10 / dArea;
+							posY = dM01 / dArea;         
+							Point CircleCenter;
+							CircleCenter=Point(posX,posY);
+							int Radius;
+							Scalar Color;
+							int Thickness;
+							int Shift;
+							Radius=45;
+							Color=CV_RGB(0,0,255);
+							Thickness=3;
+							Shift = 0;
+							circle(imgCircles,CircleCenter,Radius,Color,Thickness,CV_AA,Shift); 
+							cout<<"X : "<<posX<<" Y : "<<posY<<endl;
+                                 			ball = 1;
+							std_msgs::String msg;
+							std::stringstream ss;
+							ss << "{\"x\":" << posX;			
+							ss << ",\"y\":" << posY;
+							msg.data = ss.str() + "}";			
+							ROS_INFO("%s", msg.data.c_str());
+							camera.publish(msg);
+							ros::spinOnce();
+						}
+						else ball = 0;
+					}
+					ada =0;
+				}
+						
+					
+			}			
 		}
 		
-
-		//tampilkan frame gambar original dan threshold
+		if(ball == 0)
+		{
+				
+			std_msgs::String msg;
+			std::stringstream ss;
+			ss << "{\"x\":" << 0;			
+			ss << ",\"y\":" << 0;
+			msg.data = ss.str() + "}";			
+			ROS_INFO("%s", msg.data.c_str());
+			camera.publish(msg);
+			ros::spinOnce();
+		}
+		cout<<"Jumlah Bola :"<<ball<<endl;
 		imshow("Thresholded Image", imgThresholded); //show the thresholded image
 		// imshow("Circle Image", imgCircles);
+		imshow("HSV", imgHSV);
 		imgOriginal = imgOriginal + imgCircles;
   	  	imshow("Original", imgOriginal); //show the original image
 
 		if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 		{
-			cout << "esc key is pressed by user" << endl;
+			cout << "I'm Out (Verocia20)" << endl;
 			break; 
 		}
-
-		loop_rate.sleep();	//wait till next loop		
-   }
-   return 0;
+		//return 0;
+	}
 }
+
+  
